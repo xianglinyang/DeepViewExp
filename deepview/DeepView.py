@@ -160,7 +160,6 @@ class DeepView:
 		else:
 			self.inverse = init_inv_umap(kwargs)
 
-
 	def _get_plot_measures(self):
 		'''
 		Computes the axis limits of the main plot by using
@@ -190,18 +189,38 @@ class DeepView:
 
 		self.sample_plots = []
 
+		# for c in range(self.n_classes):
+		# 	color = self.cmap(c/(self.n_classes-1))
+		# 	plot = self.ax.plot([], [], 'o', label=self.classes[c],
+		# 		color=color, zorder=2, picker=mpl.rcParams['lines.markersize'])
+		# 	self.sample_plots.append(plot[0])
+		#
+		# for c in range(self.n_classes):
+		# 	color = self.cmap(c/(self.n_classes-1))
+		# 	plot = self.ax.plot([], [], 'o', markeredgecolor=color,
+		# 		fillstyle='none', ms=12, mew=2.5, zorder=1)
+		# 	self.sample_plots.append(plot[0])
+
+		# labels = prediction
 		for c in range(self.n_classes):
-			color = self.cmap(c/(self.n_classes-1))
-			plot = self.ax.plot([], [], 'o', label=self.classes[c], 
-				color=color, zorder=2, picker=mpl.rcParams['lines.markersize'])
+			color = self.cmap(c / (self.n_classes - 1))
+			plot = self.ax.plot([], [], '.', label=self.classes[c], ms=1,
+								color=color, zorder=2, picker=mpl.rcParams['lines.markersize'])
 			self.sample_plots.append(plot[0])
 
+		# labels != prediction, labels be a large circle
 		for c in range(self.n_classes):
-			color = self.cmap(c/(self.n_classes-1))
-			plot = self.ax.plot([], [], 'o', markeredgecolor=color, 
-				fillstyle='none', ms=12, mew=2.5, zorder=1)
+			color = self.cmap(c / (self.n_classes - 1))
+			plot = self.ax.plot([], [], 'o', markeredgecolor=color,
+								fillstyle='full', ms=3, mew=2.5, zorder=3)
 			self.sample_plots.append(plot[0])
 
+		# labels != prediction, prediction stays inside of circle
+		for c in range(self.n_classes):
+			color = self.cmap(c / (self.n_classes - 1))
+			plot = self.ax.plot([], [], '.', markeredgecolor=color,
+								fillstyle='full', ms=2, zorder=4)
+			self.sample_plots.append(plot[0])
 		# set the mouse-event listeners
 		self.fig.canvas.mpl_connect('pick_event', self.show_sample)
 		self.fig.canvas.mpl_connect('button_press_event', self.show_sample)
@@ -209,6 +228,20 @@ class DeepView:
 		self.ax.legend()
 
 	def _predict_batches(self, x):
+		'''
+		Predicts an array of samples batchwise.
+		'''
+		n_inputs = len(x)
+		preds = np.zeros([n_inputs, self.n_classes])
+
+		for i in range(0, n_inputs, self.batch_size):
+			n_preds = min(i + self.batch_size, n_inputs)
+			batch = x[i:n_preds]
+			preds[i:n_preds] = np.array(self.model(batch))
+
+		return preds
+
+	def predict_batches(self, x):
 		'''
 		Predicts an array of samples batchwise.
 		'''
@@ -423,13 +456,25 @@ class DeepView:
 		desc = params_str % (self.batch_size, self.n, self.lam, self.resolution)
 		self.desc.set_text(desc)
 
+		# for c in range(self.n_classes):
+		# 	data = self.embedded[self.y_true==c]
+		# 	self.sample_plots[c].set_data(data.transpose())
+		#
+		# for c in range(self.n_classes):
+		# 	data = self.embedded[np.logical_and(self.y_pred==c, self.y_true!=c)]
+		# 	self.sample_plots[self.n_classes+c].set_data(data.transpose())
+
 		for c in range(self.n_classes):
-			data = self.embedded[self.y_true==c]
+			data = self.embedded[np.logical_and(self.y_true == c, self.y_true == self.y_pred)]
 			self.sample_plots[c].set_data(data.transpose())
 
 		for c in range(self.n_classes):
-			data = self.embedded[np.logical_and(self.y_pred==c, self.y_true!=c)]
-			self.sample_plots[self.n_classes+c].set_data(data.transpose())
+			data = self.embedded[np.logical_and(self.y_true == c, self.y_true != self.y_pred)]
+			self.sample_plots[self.n_classes + c].set_data(data.transpose())
+		#
+		for c in range(self.n_classes):
+			data = self.embedded[np.logical_and(self.y_pred == c, self.y_true != self.y_pred)]
+			self.sample_plots[2 * self.n_classes + c].set_data(data.transpose())
 
 		if os.name == 'posix':
 			self.fig.canvas.manager.window.raise_()

@@ -51,4 +51,5 @@ deepview = DeepView(pred_wrapper, classes, max_samples, batch_size, data_shape,
 	N, lam, resolution, cmap, interactive, title)
 
 deepview.add_samples(data[:50], target[:50])
+deepview.add_samples(data[50:60], target[50:60])
 deepview.show()

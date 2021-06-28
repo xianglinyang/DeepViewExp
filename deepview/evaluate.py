@@ -4,6 +4,7 @@ import scipy.spatial.distance as distan
 import numpy as np
 import umap
 
+
 def leave_one_out_knn_dist_err(dists, labs, n_neighbors=5):
     nn = KNeighborsClassifier(n_neighbors=5, metric="precomputed")
     nn.fit(dists, labs) 
@@ -21,6 +22,7 @@ def leave_one_out_knn_dist_err(dists, labs, n_neighbors=5):
     
     # calculate the prediction error
     return sum(pred_labs != labs)/labs.shape[0]
+
 
 def evaluate_umap(deepview, return_values=False, compare_unsup=False, X=[], Y=[]):
     '''
