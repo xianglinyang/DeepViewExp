@@ -1,6 +1,10 @@
 import numpy as np
 import math
+import numba
+from tqdm import trange
+import time
 
+# @numba.jit(forceobj=True)
 def gamma(x, y, t, axis_x=0, axis_y=0):
 	N = len(t)
 	x_shape = x.shape[1:]
@@ -23,27 +27,32 @@ def gamma(x, y, t, axis_x=0, axis_y=0):
 	# vectors 5 x 10 x 3 x 32 x 32
 	return x_rep*t_rep + (1-t_rep1)*y_rep
 
+# @numba.jit(forceobj=True)
 def p_ni_row(x, y, n, i):
 	return gamma(x, y, (i/n), axis_x=0, axis_y=1)
 
+# @numba.jit(forceobj=True)
 def kl_divergence(p, q, axis):
 	# add epsilon for numeric stability
 	p += 1e-10
 	q += 1e-10
 	return np.sum(np.where(p != 0, p * np.log(p / q), 0), axis=axis)
-    
+
+# @numba.jit(forceobj=True)
 def d_js(p, q, axis=1):
 	m = (p + q)/2.   
 	kl1 = kl_divergence(p, m, axis=axis)
 	kl2 = kl_divergence(q, m, axis=axis)
 	return 0.5 * (kl1 + kl2)
 
+# @numba.jit(forceobj=True)
 def euclidian_distance(x, y, axis=(1, 2, 3)):
 	'''This corresponds to d_s in the paper'''
 	#return np.sqrt(np.sum((x - y)**2, axis=axis))
 	diff = (x - y).reshape(len(y),-1)
 	return np.linalg.norm(diff, axis=-1)
 
+# @numba.jit(forceobj=True)
 def predict_many(model, x, n_classes, batch_size):
 	# x -> (row_len, interpol, data_shape)
 	orig_shape = np.shape(x)
@@ -67,12 +76,14 @@ def predict_many(model, x, n_classes, batch_size):
 	np_preds = np.vsplit(preds, orig_shape[0])
 	return np.array(np_preds)
 
+# @numba.jit(forceobj=True)
 def distance_row(model, x, y, n, batch_size, n_classes):
 	y = y[:,np.newaxis]
 
 	steps = np.arange(1, n+2)
 	sprev = steps-1 #np.where(steps-1 < 0, 0, steps-1)
-    
+
+
 	p_prev = p_ni_row(x, y, n+1, sprev)
 	p_i = p_ni_row(x, y, n+1, steps)
 	
@@ -88,6 +99,7 @@ def distance_row(model, x, y, n, batch_size, n_classes):
 	
 	return discriminative.sum(axis=1), euclidian
 
+# @numba.jit(forceobj=True)
 def calculate_fisher(model, from_samples, to_samples, n, batch_size, n_classes, verbose=True):
 
 	n_xs = len(from_samples)
@@ -99,7 +111,11 @@ def calculate_fisher(model, from_samples, to_samples, n, batch_size, n_classes, 
 	discr_distances = np.zeros([n_xs, n_ys])
 	eucl_distances = np.zeros([n_xs, n_ys])
 
-	for i in range(n_xs):
+	# pbar = tqdm(total=n_xs)
+	# for i in range(n_xs):
+	t = trange(n_xs, desc="Distance calculation", leave=True)
+	t0 = time.time()
+	for i in t:
 
 		x = from_samples[i]
 		x = x[np.newaxis]
@@ -117,7 +133,10 @@ def calculate_fisher(model, from_samples, to_samples, n, batch_size, n_classes, 
 		eucl_distances[i] = eucl_row
 
 		if (i+1) % (n_xs//5) == 0:
+		# 	if verbose:
+		# 		print('Distance calculation %.2f %%' % (((i+1)/n_xs)*100))
 			if verbose:
-				print('Distance calculation %.2f %%' % (((i+1)/n_xs)*100))
+				t1 = time.time()
+				print("Time: {:.2f} s to finish {} % of data".format(t1-t0, ((i+1)/n_xs)*100))
 
 	return discr_distances, eucl_distances

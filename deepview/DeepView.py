@@ -275,6 +275,7 @@ class DeepView:
 		self.mapper.fit(self.distances)
 		self.embedded = self.mapper.transform(self.distances)
 		self.inverse.fit(self.embedded, self.samples)
+		# for experiment
 		self.classifier_view = self.compute_grid()
 
 	def queue_samples(self, samples, labels, preds):
