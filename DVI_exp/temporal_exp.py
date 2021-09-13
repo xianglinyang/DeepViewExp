@@ -137,26 +137,6 @@ def main(args):
         np.save(os.path.join(output_dir, "train_data.npy"), train_data)
         np.save(os.path.join(output_dir, "embedding.npy"), fitting_embedding)
 
-        # # add samples
-        # Y_probs = deepview._predict_batches(test_data)
-        # Y_preds = Y_probs.argmax(axis=1)
-        # deepview.queue_samples(test_data, test_label, Y_preds)
-        # new_discr, new_eucl = calculate_fisher(deepview.model, test_data, deepview.samples,
-        #                                        deepview.n, deepview.batch_size, deepview.n_classes, deepview.verbose)
-        # deepview.discr_distances = deepview.update_matrix(deepview.discr_distances, new_discr)
-        # deepview.eucl_distances = deepview.update_matrix(deepview.eucl_distances, new_eucl)
-        # deepview.mapper.fit(deepview.distances)
-        # deepview.embedded = deepview.mapper.transform(deepview.distances)
-        # fitting_embedding = deepview.embedded
-        #
-        # np.save(os.path.join(output_dir, "test_fisher_dist.npy"), deepview.discr_distances)
-        # np.save(os.path.join(output_dir, "test_eucli_dist.npy"), deepview.eucl_distances)
-        # np.save(os.path.join(output_dir, "test_dist.npy"), deepview.distances)
-        # np.save(os.path.join(output_dir, "test_data.npy"), test_data)
-        # np.save(os.path.join(output_dir, "test_train_embedding.npy"), fitting_embedding[:train_num])
-        # np.save(os.path.join(output_dir, "test_border_embedding.npy"), fitting_embedding[train_num:-test_num])
-        # np.save(os.path.join(output_dir, "test_test_embedding.npy"), fitting_embedding[-test_num:])
-
 
 def temporal_preserving_train(args, n_neighbors):
     """evalute training temporal preserving property"""
