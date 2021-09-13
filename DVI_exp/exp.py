@@ -26,14 +26,12 @@ def main(args):
 
     content_path = args.content_path
     sys.path.append(content_path)
-    # try:
-    #     from Model.model import resnet18
-    #     net = resnet18()
-    # except:
-    #     from Model.model import resnet50
-    #     net = resnet50()
-    from Model.model import resnet50
-    net = resnet50()
+    if args.dim == 512:
+        from Model.model import resnet18
+        net = resnet18()
+    else:
+        from Model.model import resnet50
+        net = resnet50()
 
     epoch_id = args.epoch_id
     device = torch.device(args.device)
@@ -213,6 +211,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp", type=int)
     parser.add_argument("--ckpt", type=bool, default=True, help="whether to load from ckpt or not")
     parser.add_argument("--output_name", type=str)
+    parser.add_argument("--dim", type=int, default=512)
     args = parser.parse_args()
     main(args)
 

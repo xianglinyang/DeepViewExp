@@ -14,20 +14,13 @@ from scipy.special import softmax
 
 def main(args):
     result = list()
-
-    # if args.dataset == "CIFAR10":
-    #     classes = ("airplane", "car", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck")
-    # elif args.dataset == "MNIST":
-    #     classes = ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-    # else:
-    #     classes = ("T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot")
-
     content_path = args.content_path
     sys.path.append(content_path)
-    try:
+    dim = args.dim
+    if dim ==512 :
         from Model.model import resnet18
         net = resnet18()
-    except:
+    else:
         from Model.model import resnet50
         net = resnet50()
 
@@ -118,6 +111,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_shape", nargs='+', type=int)
     parser.add_argument("--dataset", type=str, default="CIFAR10", choices=["CIFAR10", "MNIST", "FASHIONMNIST"])
     parser.add_argument("--exp", type=int)
+    parser.add_argument("--dim", type=int, default=512)
     # parser.add_argument("--ckpt", type=bool, default=True, help="whether to load from checkpoint or not")
     parser.add_argument("--output_name", type=str)
     args = parser.parse_args()
